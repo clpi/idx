@@ -1,4 +1,15 @@
+**ext
 **.env
 **zig-cache
 **zig-out
+**.ccls_cache
+**.o 
+*/bindgen/**.c 
+*/bindgen/**.h
+link.filelist
+**target
+**out
+**dist/
 
+.zigmod
+deps.zig

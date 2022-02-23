@@ -1,0 +1,52 @@
+name: Publish
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
+      - run: zig build test
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
+      - run: zig fmt --check src/*.zig
+
+  build_rust:
+    name: Rust components
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+
+  just_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: extractions/setup-just@v1
+      - run: just markdown
+
+
+  # publish:
+  #   runs-on: ubuntu-latest
+  #   environment: publish
+  #   steps:
+  #     - uses: mattnite/setup-gyro@v1
+  #     - uses: actions/checkout@v2
+  #     - run: gyro publish
+  #       env:
+  #         GYRO_ACCESS_TOKEN: ${{ secrets.GYRO_ACCESS_TOKEN }}
+
+

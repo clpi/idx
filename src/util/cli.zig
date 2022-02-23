@@ -1,4 +1,5 @@
 const std = @import("std");
+const print = std.debug.print;
 const Allocator = std.mem.Allocator;
 const str = []const u8;
 
@@ -16,12 +17,13 @@ pub fn init(a: std.mem.Allocator, ops: []Arg, args: [][:0]u8) !*Cli {
     try as.appendSlice(args);
     try opt.appendSlice(ops);
     var match = Cli.verify_matches(a, opt);
+    defer _ = match.deinit();
     var cmds = Cli.cmdSet(a, opt);
     var cli = Cli{ 
         .opts = opt,
         .allocator = a, 
         .args = as,
-        .matches = &match, 
+        .matches = &match,
         .cmds = &cmds,
     };
     return Cli.parse(&cli);
@@ -97,30 +99,39 @@ pub fn parse(self: *Cli) *Cli {
         };
     }
     return self;
+
 }
 
-pub fn print(self: Cli) !void {
+pub fn printJson(self: Cli) !void {
     try std.json.stringify(self, .{}, std.io.getStdOut().writer());
 
 }
 pub fn printCmd(self: Cli) void {
     var i: usize = 0;
-    while (self.cmds.keyIterator().next()) |k| : (i += 1)  {
+    while (self.cmds.hash_map.keyIterator().next()) |k| : (i += 1)  {
         std.debug.print("{d}: matches: {s} \n", .{i, k});
     }
 }
 pub fn printMatches(self: Cli) void {
     var i: usize = 0;
-    while (self.matches.keyIterator().next()) |k| : (i += 1)  {
+    while (self.matches.hash_map.keyIterator().next()) |k| : (i += 1)  {
         std.debug.print("{d}: matches: {s} \n", .{i, k});
     }
 }
-pub fn printOpts(self: Cli) void {
-    for (self.opts.items) |r| switch (r.kind) {
-        .cmd => |c| std.debug.print("\x1b[32;1mCMD:\x1b[0m \x1b[32m{s}\x1b[0m {d}\n", .{r.long, c}),
-        .opt => |o| std.debug.print("\x1b[31;1mOPT:\x1b[0m \x1b[35m{s}\x1b[0m {s}\n", .{r.long, o}),
-        .flag=> |f| std.debug.print("\x1b[34;1mFLG:\x1b[0m \x1b[36m{s}\x1b[0m {s}\n", .{r.long, f}),
-    };
+pub fn printOpts(sf: *Cli) void {
+    const ots = sf.opts;
+    const w: usize = 10;
+    const shortw: usize = 7;
+    const valw: usize = 7;
+    print("\x1b[32;1m{s:<5} \x1b[32;1m{s:[4]} \x1b[32;1m{s:[5]}  {s:>[6]}\n", .{"TYPE ", "SHORT", "LONG", "VALUE", shortw, w, valw});
+    print("\x1b[39;1m{s:-<4}  {s:[4]} \x1b[39;1m{s:[5]}  {s:>[6]}\n", .{"", "-----", "----", "-----", shortw, w, valw});
+    for (ots.items) |r| {
+        switch (r.kind) {
+            .cmd => |c| print("\x1b[32;1m{s:>5} \x1b[0m\x1b[32m{s:>[4]} \x1b[32;1m{s:>[5]}  \x1b[0m{d:>[6]}\n", .{"Cmd", r.short, r.long, c, shortw, w, valw}),
+            .opt => |o| print("\x1b[31;1m{s:>5} \x1b[0m\x1b[35m{s:>[4]} \x1b[35;1m{s:>[5]}  \x1b[0m{s:>[6]}\n", .{"Opt", r.short, r.long, o, shortw, w, valw}),
+            .flag=> |f| print("\x1b[34;1m{s:>5} \x1b[0m\x1b[36m{s:>[4]} \x1b[36;1m{s:>[5]}  \x1b[0m{s:>[6]}\n", .{"Flag", r.short, r.long, f, shortw, w, valw}),
+        }
+    }
 }
 
 pub const Arg = struct {
@@ -166,11 +177,26 @@ pub const Arg = struct {
     }
 };
 
-    pub var user_opts = [_]Cli.Arg{ 
-        Cli.Arg.opt("n", "name"), 
-        Cli.Arg.opt("p", "path"),
-        Cli.Arg.cmd("b", "build"),
-        Cli.Arg.cmd("i", "init"),
-        Cli.Arg.cmd("r", "run"),
-        Cli.Arg.flag("q", "quiet"),
-    };
+pub var user_opts = [_]Cli.Arg{ 
+    Cli.Arg.opt("n", "name"), 
+    Cli.Arg.opt("d", "dir"),
+    Cli.Arg.opt("P", "profile"),
+    Cli.Arg.opt("k", "key"),
+// };
+// pub var user_cmds = [_]Cli.Arg{
+    Cli.Arg.cmd("b", "build"),
+    Cli.Arg.cmd("k", "keys"),
+    Cli.Arg.cmd("i", "init"),
+    Cli.Arg.cmd("r", "run"),
+    // Cli.Arg.cmd("R", "repl"),
+    // Cli.Arg.cmd("a", "auth"),
+    // Cli.Arg.cmd("s", "sync"),
+    Cli.Arg.cmd("c", "conf"),
+    // Cli.Arg.cmd("g", "guide"),
+// };
+// pub var user_flags = [_]Cli.Arg{
+    Cli.Arg.flag("I", "info"),
+    Cli.Arg.flag("Q", "quiet"),
+    Cli.Arg.flag("C", "colors")
+};
+

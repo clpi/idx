@@ -1,0 +1,30 @@
+[package]
+name         = "idla"
+version      = "0.0.1"
+description  = "tool ecossystem"
+license-file = "LICENSE"
+readme       = "README.md"
+repository   = "https://github.com/clpi/idla.git"
+license      = "ISC"
+
+[[module]]
+name = "idla"
+source = "./dist/wasm/bin/idla.wasm"
+abi = "wasi"
+
+[[command]]
+name = "idla"
+module = "idla"
+
+[[module]]
+name = "ispec"
+source = "./dist/wasm/bin/ispec.wasm"
+abi = "wasi"
+
+[[module]]
+source = "idot"
+source = "./dist/wasm/bin/idot.wasm"
+abi = "wasi"
+
+[fs]
+"./lib/" = "lib"

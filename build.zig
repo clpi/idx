@@ -1,17 +1,19 @@
 const std = @import("std");
+const Pkg = std.build.Pkg;
+const Step = std.build.Step;
+const RunStep = std.build.RunStep;
+const Builder = std.build.Builder;
+const FileSrc = std.build.FileSource;
+const InstallDir = std.build.InstallDir;
 
 pub fn build(b: *std.build.Builder) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
     const exe = b.addExecutable("idl", "src/main.zig");
+    exe.addPackage(Idla.pkg);
+    exe.addPackage(Idpk.pkg);
+    exe.addPackage(Core.pkg);
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
@@ -32,3 +34,13 @@ pub fn build(b: *std.build.Builder) void {
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
 }
+
+const Idla = struct {
+    pub const pkg = Pkg{ .name = "idla", .path = FileSrc{.path = "./lib/idla/src/main.zig"}, .dependencies = null};
+};
+const Idpk = struct {
+    pub const pkg = Pkg{ .name = "idpkg", .path = FileSrc{.path = "./lib/idpk/src/main.zig"}, .dependencies = null};
+};
+const Core = struct {
+    pub const pkg = Pkg{ .name = "core", .path = FileSrc{.path = "./lib/src/main.zig"}, .dependencies = null};
+};

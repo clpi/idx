@@ -1,0 +1,81 @@
+variables: &global-variables
+  PROFILE: development
+
+include:
+  - local: './ci/gitlab/cargo-make.yml'
+  - local: './ci/gitlab/rust.yml'
+  - local: './ci/gitlab/zig.yml'
+
+stages:
+  - setup
+  - build-zig
+  - build-ext
+  - package
+  - publish
+  # - test
+
+ensure-out-dir:
+  stage: setup
+  script:
+    - mkdir -p ./out/llvm/obj/
+    - mkdir -p ./out/llvm/src/
+    - mkdir -p ./out/lib/``
+    - mkdir -p ./out/obj/``
+
+build-idlang:
+  stage: build-zig
+  script:
+    - echo "Building Idlang (Main)"
+    - zig build ./
+    - cp -r ./zig-out/bin/il ./out/
+  artifacts:
+    name: Idleset
+    paths:
+      - out/
+    exclude:
+      - out/**/*.0
+
+build-idledown:
+  stage: build-zig
+  script:
+    - echo "Building Idlang (2/.."
+    - zig build ./pkg/idown
+    - cp -r ./pkg/idown/zig-out/bin/idown ./out/
+
+build-idlespec:
+  stage: build-zig
+  script:
+    - echo "Building Idlang (3/.."
+    - zig build ./pkg/ispec/
+    - cp -r ./pkg/ispec/zig-out/bin/il ./out/
+
+build-idpm:
+  stage: build-zig
+  script:
+    - echo "Building IDPM (4/..."
+    - zig build ./pkg/idpm/
+    - cp -r ./pkg/idpm/zig-out/bin/il ./out/
+
+build-idletask:
+  stage: build-zig
+  script:
+    - echo "Building Itask (5/..."
+    - zig build ./pkg/itask/
+    - cp -r ./pkg/itask/zig-out/lib/libitask.a ./out/
+
+build-misc-zig:
+  stage: build-zig
+  script:
+    - echo "Building misc zig pkgs"
+    - zig build ./pkg/ilc/
+    - cp -r ./
+  artifacts:
+    name: Idleset
+    paths:
+      - out/
+    exclude:
+      - out/**/*.0
+
+
+
+

@@ -1,0 +1,61 @@
+[package]
+name = "is"
+authors = ["chris p <clp@clp.is>"]
+version = "0.1.0"
+edition = "2021"
+build = "scripts/build.rs"
+default-run = "is"
+exclude = ["./lab", "./web"]
+
+[[bin]]
+name = "is"
+path = "app/is-api/src/bin/is.rs"
+doc = false
+
+[[bin]]
+name = "is-tui"
+path = "app/is-tui/src/main.rs"
+
+[[bin]]
+name = "is-server"
+path = "app/is-cli/src/bin/server.rs"
+doc = false
+
+[[bin]]
+name = "is-db"
+doc = false
+path = "lib/is-db/src/bin/is-db.rs"
+
+[[bin]]
+name = "is-proto"
+path = "pkg/is-proto/src/bin/is-proto.rs"
+doc = false
+
+[workspace]
+default-members = [
+    "./app/is-cli"
+]
+members = [
+    "./lib/*",
+    "./pkg/*",
+    "./app/*"
+]
+exclude = [
+    "./lab/*",
+    "./web/*",
+	"./lab/is-was",
+	"./lab/is-emb",
+	"./lab/is-net",
+	"./lab/is-grpc",
+	"./lab/is-proto",
+    "./app/is-wasm",
+    "./web/wasm",
+    "./idl"
+]
+
+[profile.release]
+lto = true
+codegen-units = 1
+incremental = false
+panic = "abort"
+debug = 0
